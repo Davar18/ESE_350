@@ -11,15 +11,14 @@
 #include <string.h>
 #include <stdlib.h>
 #include <avr/interrupt.h>
-//#include <util/delay.h>
 #include "uart.h"
 
 #define TRUE 1
 #define FALSE 0
 #define F_CPU 16000000UL
-#define BAUD 9600
 
 int falling = TRUE;
+
 unsigned int downTime = 0;
 unsigned int upTime = 0;
 unsigned int timeDiff = 0;
@@ -32,6 +31,7 @@ enum Codes
 {
 	DOT=0, DASH, SPACE, NA
 };
+
 typedef struct pC{
 	struct pC* ifDot;
 	struct pC* ifDash;
@@ -84,42 +84,68 @@ partialCode T = {&N, &M, 'T'};
 
 
 
-char getChar(enum Codes codeArray[]){
+char getChar(enum Codes codeArray[])
+{
 	int length = 0;
 	int containsSpaces = FALSE;
-	while(TRUE){
-		if(codeArray[length] == SPACE){
+	
+	while (TRUE)
+	{
+		if (codeArray[length] == SPACE)
+		{
 			containsSpaces = TRUE;
-		} else {
+		} 
+		else 
+		{
 			//printf("!");
 		}
-		if(codeArray[length] != NA) length++;
+		
+		if (codeArray[length] != NA) length++;
 		else break;
 	}
-	if(containsSpaces == TRUE){
+	
+	if (containsSpaces == TRUE)
+	{
 		//printf("Made it");
-		if(length == 1) return ' ';
+		if (length == 1) return ' ';
 		return '?';
 	}
+	
 	partialCode * currentNode;
-	if(codeArray[0] == DOT){
+	
+	if (codeArray[0] == DOT)
+	{
 		currentNode = &E;
-	} else if (codeArray[0] == DASH){
+	} 
+	else if (codeArray[0] == DASH)
+	{
 		currentNode = &T;
-	} else {
+	} 
+	else 
+	{
 		//It is NA
 		return '?';
 	}
+	
 	int index = 1;
-	while(TRUE){
-		if(index == length) return currentNode->thisPos;
-		if(codeArray[index] == DOT){
+	
+	while (TRUE)
+	{
+		if (index == length) return currentNode->thisPos;
+		
+		if (codeArray[index] == DOT)
+		{
 			currentNode = currentNode->ifDot;
-		} else if(codeArray[index]==DASH){
+		} 
+		else if(codeArray[index]==DASH)
+		{
 			currentNode = currentNode->ifDash;
-		} else {
+		} 
+		else 
+		{
 			return '?';
 		}
+		
 		index++;
 	}
 	return '?';
@@ -127,7 +153,9 @@ char getChar(enum Codes codeArray[]){
 
 void getCharUnitTests(){
 	printf("Checking for errors in getChar()\n");
+	
 	enum Codes test[] = {DOT, DOT, DOT, DOT, NA};
+	
 	if(getChar(test) == 'H'){
 		printf("Passed for H\n");
 	} else {
