@@ -11,14 +11,15 @@
 #include <string.h>
 #include <stdlib.h>
 #include <avr/interrupt.h>
+//#include <util/delay.h>
 #include "uart.h"
 
 #define TRUE 1
 #define FALSE 0
 #define F_CPU 16000000UL
+#define BAUD 9600
 
 int falling = TRUE;
-
 unsigned int downTime = 0;
 unsigned int upTime = 0;
 unsigned int timeDiff = 0;
@@ -94,34 +95,35 @@ char getChar(enum Codes codeArray[])
 		if (codeArray[length] == SPACE)
 		{
 			containsSpaces = TRUE;
-		} 
-		else 
+		}
+		else
 		{
 			//printf("!");
 		}
-		
-		if (codeArray[length] != NA) length++;
-		else break;
+		if (codeArray[length] != NA)
+			length++;
+		else
+			break;
 	}
 	
 	if (containsSpaces == TRUE)
 	{
 		//printf("Made it");
-		if (length == 1) return ' ';
+		if (length == 1)
+			return ' ';
 		return '?';
 	}
-	
 	partialCode * currentNode;
 	
 	if (codeArray[0] == DOT)
 	{
 		currentNode = &E;
-	} 
+	}
 	else if (codeArray[0] == DASH)
 	{
 		currentNode = &T;
-	} 
-	else 
+	}
+	else
 	{
 		//It is NA
 		return '?';
@@ -131,98 +133,137 @@ char getChar(enum Codes codeArray[])
 	
 	while (TRUE)
 	{
-		if (index == length) return currentNode->thisPos;
-		
+		if (index == length)
+			return currentNode->thisPos;
 		if (codeArray[index] == DOT)
 		{
 			currentNode = currentNode->ifDot;
-		} 
-		else if(codeArray[index]==DASH)
+		}
+		else if (codeArray[index] == DASH)
 		{
 			currentNode = currentNode->ifDash;
-		} 
-		else 
+		}
+		else
 		{
 			return '?';
 		}
-		
 		index++;
 	}
 	return '?';
 }
 
-void getCharUnitTests(){
+void getCharUnitTests()
+{
 	printf("Checking for errors in getChar()\n");
-	
-	enum Codes test[] = {DOT, DOT, DOT, DOT, NA};
-	
-	if(getChar(test) == 'H'){
+	enum Codes test[] =
+	{ DOT, DOT, DOT, DOT, NA };
+	if (getChar(test) == 'H')
+	{
 		printf("Passed for H\n");
-	} else {
-		printf("Failed for H. Thinks it is (%c).\n",getChar(test));
 	}
-	enum Codes testNew[] = {DOT, DOT, DOT, DOT, SPACE, NA};
-	if(getChar(testNew) == '?'){
+	else
+	{
+		printf("Failed for H. Thinks it is (%c).\n", getChar(test));
+	}
+	
+	enum Codes testNew[] =
+	{ DOT, DOT, DOT, DOT, SPACE, NA };
+	
+	if (getChar(testNew) == '?')
+	{
 		printf("Passed for odd space\n");
-		} else {
-		printf("Failed for odd space. Thinks it is (%c).\n",getChar(test));
 	}
-	enum Codes test2[] = {DASH, DASH, DASH, DASH, DASH, NA};
-	if(getChar(test2) == '0'){
+	else
+	{
+		printf("Failed for odd space. Thinks it is (%c).\n", getChar(test));
+	}
+	
+	enum Codes test2[] =
+	{ DASH, DASH, DASH, DASH, DASH, NA };
+	
+	if (getChar(test2) == '0')
+	{
 		printf("Passed for 0\n");
-		} else {
-		printf("Failed for 0. Thinks it is (%c).\n",getChar(test2));
 	}
-	enum Codes test3[] = {DASH, NA};
-	if(getChar(test3) == 'T'){
+	else
+	{
+		printf("Failed for 0. Thinks it is (%c).\n", getChar(test2));
+	}
+	
+	enum Codes test3[] =
+	{ DASH, NA };
+	
+	if (getChar(test3) == 'T')
+	{
 		printf("Passed for T\n");
-		} else {
-		printf("Failed for T. Thinks it is (%c).\n",getChar(test3));
 	}
-	enum Codes test4[] = {SPACE, NA};
-	if(getChar(test4) == ' '){
+	else
+	{
+		printf("Failed for T. Thinks it is (%c).\n", getChar(test3));
+	}
+	
+	enum Codes test4[] =
+	{ SPACE, NA };
+	
+	if (getChar(test4) == ' ')
+	{
 		printf("Passed for []\n");
-		} else {
-		printf("Failed for []. Thinks it is (%c).\n",getChar(test4));
+	}
+	else
+	{
+		printf("Failed for []. Thinks it is (%c).\n", getChar(test4));
 	}
 }
 
 enum Codes listOfCodes[100];
-void initializeCodeList(enum Codes codes[]){
-	for(int i=0; i<100;i++){
+
+void initializeCodeList(enum Codes codes[])
+{
+	for (int i = 0; i < 100; i++)
+	{
 		codes[i] = NA;
 	}
 }
 
-char printCodeSoFar(enum Codes toAdd){
+char printCodeSoFar(enum Codes toAdd)
+{
 	int length = 0;
 	char result = '*';
 	int endOfWord = 0;
-	if(toAdd == NA) return '?';
+	if (toAdd == NA)
+		return '?';
 	//printf("\n");
-	for(int i=0; i<100; i++){
+	for (int i = 0; i < 100; i++)
+	{
 		length++;
-		if(listOfCodes[i] == NA){
+		if (listOfCodes[i] == NA)
+		{
 			listOfCodes[i] = toAdd;
 			break;
 		} /*else if(listOfCodes[i] == SPACE){
-			printf("[]");
-		} else if(listOfCodes[i] == DOT){
-			printf(".");
-		} else if(listOfCodes[i] == DASH){
-			printf("_");
-		}*/
+		 printf("[]");
+		 } else if(listOfCodes[i] == DOT){
+		 printf(".");
+		 } else if(listOfCodes[i] == DASH){
+		 printf("_");
+		 }*/
 	}
 	//printf("\n");
 	//printf("Number of Codes : %d\n",length);
 	enum Codes buffer[100];
 	initializeCodeList(buffer);
+	
 	int dontPrint = FALSE;
-	while(result != '?'){
-		for(int i = 0; i <= endOfWord; i++){
+	
+	while (result != '?')
+	{
+		for (int i = 0; i <= endOfWord; i++)
+		{
 			buffer[i] = listOfCodes[i];
 		}
-		if(result == getChar(buffer)){
+	
+		if (result == getChar(buffer))
+		{
 			//printf("%c", '$');
 			dontPrint = TRUE;
 			break;
@@ -233,78 +274,114 @@ char printCodeSoFar(enum Codes toAdd){
 		//printf("\n");
 		endOfWord++;
 	}
-	if(result == '*') return '?';
-	if(endOfWord == 0) return '?';
+	
+	if (result == '*')
+		return '?';
+	
+	if (endOfWord == 0)
+		return '?';
+	
 	//printf("buffer:{");
+	
 	initializeCodeList(buffer);
-	for(int i = 0; i < endOfWord - 1; i++){
+	
+	for (int i = 0; i < endOfWord - 1; i++)
+	{
 		buffer[i] = listOfCodes[i];
 		//printf("%i",buffer[i]);
 	}
 	//printf("}\n");
 	result = getChar(buffer);
-	if(dontPrint == FALSE) endOfWord--;
+	
+	if (dontPrint == FALSE)
+		endOfWord--;
 	//printf("(%d,%d,%c)\n",length, endOfWord,result);
-	if(length > endOfWord){
-		printf("%c",result);
-		for(int i = 0; i < 100-(endOfWord+1); i++){
-			listOfCodes[i] = listOfCodes[i+endOfWord];
+	
+	if (length > endOfWord)
+	{
+		printf("%c", result);
+		for (int i = 0; i < 100 - (endOfWord + 1); i++)
+		{
+			listOfCodes[i] = listOfCodes[i + endOfWord];
 		}
-		for(int i = 100-endOfWord - 1; i < 100; i++){
+		for (int i = 100 - endOfWord - 1; i < 100; i++)
+		{
 			listOfCodes[i] = NA;
 		}
-/*		for(int i=0; i<100; i++){
-		length++;
-		if(listOfCodes[i] == NA){
-			break;
-		}else if(listOfCodes[i] == SPACE){
-			printf("[]");
-		} else if(listOfCodes[i] == DOT){
-			printf(".");
-		} else if(listOfCodes[i] == DASH){
-			printf("_");
-		}
-	}*/
+		/*		for(int i=0; i<100; i++){
+		 length++;
+		 if(listOfCodes[i] == NA){
+		 break;
+		 }else if(listOfCodes[i] == SPACE){
+		 printf("[]");
+		 } else if(listOfCodes[i] == DOT){
+		 printf(".");
+		 } else if(listOfCodes[i] == DASH){
+		 printf("_");
+		 }
+		 }*/
 		return result;
-	} else {
+	}
+	else
+	{
 		return '?';
 	}
 }
 
-void printCodeSoFarUnitTest(){
+void printCodeSoFarUnitTest()
+{
 	printf("Checking for errors in printCodeSoFar()\n");
-	for(int i = 0; i < 3; i++){
-		if(printCodeSoFar(DOT) != '?'){
+	for (int i = 0; i < 3; i++)
+	{
+		if (printCodeSoFar(DOT) != '?')
+		{
 			//printf("Failed at %d",i);
 		}
 	}
+	
 	char test = printCodeSoFar(SPACE);
-	if(test != 'S'){
-		printf("Failed at %c",test);
+	
+	if (test != 'S')
+	{
+		printf("Failed at %c", test);
 		return;
 	}
-	for(int i = 0; i < 3; i++){
-		if(printCodeSoFar(DASH) != '?'){
+	
+	for (int i = 0; i < 3; i++)
+	{
+		if (printCodeSoFar(DASH) != '?')
+		{
 			//printf("Failed at %d",i);
 		}
 	}
+	
 	test = printCodeSoFar(SPACE);
-	if(test != 'O'){
-		printf("Failed at %c",test);
+	
+	if (test != 'O')
+	{
+		printf("Failed at %c", test);
 		return;
 	}
-	for(int i = 0; i < 3; i++){
-		if(printCodeSoFar(DOT) != '?'){
+	
+	for (int i = 0; i < 3; i++)
+	{
+		if (printCodeSoFar(DOT) != '?')
+		{
 			//printf("Failed at %d",i);
 		}
 	}
+	
 	test = printCodeSoFar(SPACE);
-	if(test != 'S'){
-		printf("Failed at %c",test);
+	
+	if (test != 'S')
+	{
+		printf("Failed at %c", test);
 		return;
 	}
+	
 	printf("\nPassed all unit tests!\n");
 }
+
 ISR(TIMER1_OVF_vect)
 {
 	numOverflow++;
@@ -452,7 +529,7 @@ int main(void)
 	initializeCodeList(listOfCodes);
 	printCodeSoFarUnitTest();
 	printf("Starting Program\n");
-	
+
 	DDRB |= (1 << PINB5);
 	DDRB |= (1 << PINB1);
 	DDRB |= (1 << PINB2);
@@ -467,6 +544,5 @@ int main(void)
 	TIMSK1 |= (1 << ICIE1) | (1 << TOIE1);
 
 	sei();
-	while (1)
-		;
+	while (1);
 }
