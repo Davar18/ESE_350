@@ -11,7 +11,6 @@
 #include <string.h>
 #include <stdlib.h>
 #include <avr/interrupt.h>
-//#include <util/delay.h>
 #include "uart.h"
 
 #define TRUE 1
@@ -96,10 +95,7 @@ char getChar(enum Codes codeArray[])
 		{
 			containsSpaces = TRUE;
 		}
-		else
-		{
-			//printf("!");
-		}
+		
 		if (codeArray[length] != NA)
 			length++;
 		else
@@ -108,7 +104,6 @@ char getChar(enum Codes codeArray[])
 	
 	if (containsSpaces == TRUE)
 	{
-		//printf("Made it");
 		if (length == 1)
 			return ' ';
 		return '?';
@@ -155,8 +150,10 @@ char getChar(enum Codes codeArray[])
 void getCharUnitTests()
 {
 	printf("Checking for errors in getChar()\n");
+	
 	enum Codes test[] =
 	{ DOT, DOT, DOT, DOT, NA };
+	
 	if (getChar(test) == 'H')
 	{
 		printf("Passed for H\n");
@@ -232,7 +229,7 @@ char printCodeSoFar(enum Codes toAdd)
 	int endOfWord = 0;
 	if (toAdd == NA)
 		return '?';
-	//printf("\n");
+
 	for (int i = 0; i < 100; i++)
 	{
 		length++;
@@ -240,16 +237,9 @@ char printCodeSoFar(enum Codes toAdd)
 		{
 			listOfCodes[i] = toAdd;
 			break;
-		} /*else if(listOfCodes[i] == SPACE){
-		 printf("[]");
-		 } else if(listOfCodes[i] == DOT){
-		 printf(".");
-		 } else if(listOfCodes[i] == DASH){
-		 printf("_");
-		 }*/
+		} 
 	}
-	//printf("\n");
-	//printf("Number of Codes : %d\n",length);
+	
 	enum Codes buffer[100];
 	initializeCodeList(buffer);
 	
@@ -269,9 +259,7 @@ char printCodeSoFar(enum Codes toAdd)
 			break;
 		}
 		result = getChar(buffer);
-		//printf("Result thus far : %c", result);
-		//if(result == ' ') printf("[]");
-		//printf("\n");
+		
 		endOfWord++;
 	}
 	
@@ -280,22 +268,18 @@ char printCodeSoFar(enum Codes toAdd)
 	
 	if (endOfWord == 0)
 		return '?';
-	
-	//printf("buffer:{");
-	
+		
 	initializeCodeList(buffer);
 	
 	for (int i = 0; i < endOfWord - 1; i++)
 	{
 		buffer[i] = listOfCodes[i];
-		//printf("%i",buffer[i]);
 	}
-	//printf("}\n");
+
 	result = getChar(buffer);
 	
 	if (dontPrint == FALSE)
 		endOfWord--;
-	//printf("(%d,%d,%c)\n",length, endOfWord,result);
 	
 	if (length > endOfWord)
 	{
@@ -308,18 +292,7 @@ char printCodeSoFar(enum Codes toAdd)
 		{
 			listOfCodes[i] = NA;
 		}
-		/*		for(int i=0; i<100; i++){
-		 length++;
-		 if(listOfCodes[i] == NA){
-		 break;
-		 }else if(listOfCodes[i] == SPACE){
-		 printf("[]");
-		 } else if(listOfCodes[i] == DOT){
-		 printf(".");
-		 } else if(listOfCodes[i] == DASH){
-		 printf("_");
-		 }
-		 }*/
+		
 		return result;
 	}
 	else
@@ -331,6 +304,7 @@ char printCodeSoFar(enum Codes toAdd)
 void printCodeSoFarUnitTest()
 {
 	printf("Checking for errors in printCodeSoFar()\n");
+	
 	for (int i = 0; i < 3; i++)
 	{
 		if (printCodeSoFar(DOT) != '?')
@@ -410,11 +384,6 @@ ISR(TIMER1_CAPT_vect)
 			timeDiff2 = currTick - upTime;
 		}
 
-		// if (timeDiff2 >= 25000)
-		// {
-		// 	printf(" ");
-		// }
-
 		numOverflow = 0;
 
 		getCode(FALSE, timeDiff2);
@@ -452,25 +421,6 @@ ISR(TIMER1_CAPT_vect)
 		numOverflow = 0;
 
 		getCode(TRUE, timeDiff);
-
-		// if ((timeDiff >= 1875) && (timeDiff <= 12500)) // these numbers represent 'tick' number of 30ms and 200ms
-		// {
-		// 	printf(".");
-
-		// 	PORTB |= (1 << PINB1);
-		// 	_delay_ms(100);
-		// 	PORTB &= ~(1 << PINB1);
-		// 	PORTB |= (1 << PINB2);
-		// }
-		// else if (timeDiff > 12500)
-		// {
-		// 	printf("-");
-
-		// 	PORTB |= (1 << PINB2);
-		// 	_delay_ms(100);
-		// 	PORTB &= ~(1 << PINB2);
-		// 	PORTB |= (1 << PINB1);
-		// }
 
 		// Captured Rising edge
 		PORTB &= ~(1 << PINB5);
